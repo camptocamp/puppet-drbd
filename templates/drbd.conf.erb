@@ -1,0 +1,22 @@
+# file managed by puppet
+
+global {
+  usage-count yes;
+}
+common {
+  protocol <%= protocol %>;
+}
+resource <%= name %> {
+  on <%= host1 %> {
+    device    <%= device %>;
+    disk      <%= disk %>;
+    address   <%= host1_ip %>:<%= port %>;
+    meta-disk internal;
+  }
+  on <%= host2 %> {
+    device    <%= device %>;
+    disk      <%= disk %>;
+    address   <%= host2_ip %>:<%= port %>;
+    meta-disk internal;
+  }
+}
