@@ -1,22 +1,20 @@
-# file managed by puppet
-
-global {
-  usage-count yes;
-}
-common {
-  protocol <%= protocol %>;
-}
 resource <%= name %> {
-  on <%= host1 %> {
-    device    <%= device %>;
-    disk      <%= disk %>;
-    address   <%= host1_ip %>:<%= port %>;
-    meta-disk internal;
+
+  protocol  <%= protocol %>;
+  device    <%= device %>;
+  disk      <%= disk %>;
+  meta-disk internal;
+
+  net {
+    cram-hmac-alg sha1;
+    shared-secret "<%= secret %>";
   }
+
+  on <%= host1 %> {
+    address <%= ip1 %>:<%= port %>;
+  }
+
   on <%= host2 %> {
-    device    <%= device %>;
-    disk      <%= disk %>;
-    address   <%= host2_ip %>:<%= port %>;
-    meta-disk internal;
+    address <%= ip2 %>:<%= port %>;
   }
 }
