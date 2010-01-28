@@ -1,10 +1,12 @@
 /*
 
-== Class: drbd
+== Class: drbd::base
 
+Basic class which installs the drbd modules and tools, and enables the service
+at boot time.
 
 */
-class drbd {
+class drbd::base {
 
   case $operatingsystem {
 
@@ -41,18 +43,20 @@ class drbd {
         require => Yumrepo["centos-extra-drbd"],
       }
 
-      service { "drbd":
-        ensure    => running,
-        hasstatus => true,
-        enable    => true,
-      }
-
     }
 
     Debian: {
       #TODO
     }
   }
+
+  service { "drbd":
+    ensure    => running,
+    hasstatus => true,
+    enable    => true,
+    require   => Package["drbd", "drbd-module"],
+  }
+
 }
 
 define drbd::config ($host1, $host2, $host1_ip, $host2_ip, $port='7789', $secret, $disk, $device='/dev/drbd0', $protocol='C') {
