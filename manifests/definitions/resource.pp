@@ -2,7 +2,16 @@
 
 == Definition: drbd::resource
 
-Wrapper around drbd::config to ease the definition of DRBD resources.
+Wrapper around drbd::config to ease the definition of DRBD resources. It also
+initalizes the DRBD device if needed.
+
+Note: you will still need to manually synchronize both DRBD volumes, format
+the resulting device and mount it. This can be done with the following
+commands:
+
+  drbdadm -- --overwrite-data-of-peer primary $name
+  mkfs.ext3 /dev/drbd/by-res/$name
+  mount /dev/drbd/by-res/$name /mnt/
 
 Parameters:
 - *$name*: name of the resource.
@@ -43,14 +52,36 @@ define drbd::resource ($host1, $host2, $ip1, $ip2, $port='7789', $secret, $disk,
     content => template("drbd/drbd.conf.erb"),
   }
 
-  iptables { "allow drbd from $host1":
+  # create metadata on device, except if resource seems already initalized.
+  exec { "intialize DRBD metadata for $name":
+    command => "drbdadm create-md $name",
+    onlyif  => "test -e $disk",
+    unless  => "drbdadm dump-md $name || (drbdadm cstate $name | egrep -q '^Connected')",
+    before  => Exec["reload drbd"],
+    require => [
+      Exec["load drbd module"],
+      Drbd::Config["ZZZ-resource-${name}"],
+    ],
+  }
+
+  exec { "enable DRBD resource $name":
+    command => "drbdadm up $name",
+    onlyif  => "drbdadm dstate $name | egrep -q '^Diskless/|^Unconfigured'",
+    before  => Exec["reload drbd"],
+    require => [
+      Exec["intialize DRBD metadata for $name"],
+      Exec["load drbd module"],
+    ],
+  }
+
+  iptables { "allow drbd from $host1 on port $port":
     proto  => "tcp",
     dport  => $port,
     source => $ip1,
     jump   => "ACCEPT",
   }
 
-  iptables { "allow drbd from $host2":
+  iptables { "allow drbd from $host2 on port $port":
     proto  => "tcp",
     dport  => $port,
     source => $ip2,
