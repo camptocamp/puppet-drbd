@@ -54,11 +54,17 @@ class drbd::base {
     }
   }
 
+  exec { "load drbd module":
+    command => "modprobe drbd",
+    creates => "/proc/drbd",
+    require => Package["drbd-module"],
+  }
+
   service { "drbd":
     ensure    => running,
     hasstatus => true,
     enable    => true,
-    require   => Package["drbd", "drbd-module"],
+    require   => [Package["drbd", "drbd-module"], Exec["load drbd module"]],
   }
 
   # Notifying the drbd service is definitely a bad idea. This exec will do the
