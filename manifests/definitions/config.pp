@@ -29,7 +29,7 @@ define drbd::config ($content) {
     owner   => "root",
     content => "# file managed by puppet\n\n${content}\n",
     require => Package["drbd"],
-    notify  => Exec["reload drbd"],
+    notify  => Service["drbd"],
   }
 
 }

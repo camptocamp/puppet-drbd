@@ -63,16 +63,9 @@ class drbd::base {
   service { "drbd":
     ensure    => running,
     hasstatus => true,
+    restart   => "/etc/init.d/drbd reload",
     enable    => true,
     require   => [Package["drbd", "drbd-module"], Exec["load drbd module"]],
-  }
-
-  # Notifying the drbd service is definitely a bad idea. This exec will do the
-  # same thing "service drbd reload" would do.
-  exec { "reload drbd":
-    command     => "drbdadm adjust all",
-    refreshonly => true,
-    require     => Service["drbd"],
   }
 
   # this file just includes other files
@@ -85,7 +78,7 @@ include "/etc/drbd.conf.d/*.conf";
 ',
     require => Package["drbd"],
     before  => Service["drbd"],
-    notify  => Exec["reload drbd"],
+    notify  => Service["drbd"],
   }
 
   # only allow files managed by puppet in this directory.
@@ -96,7 +89,7 @@ include "/etc/drbd.conf.d/*.conf";
     recurse => true,
     force   => true,
     require => Package["drbd"],
-    notify  => Exec["reload drbd"],
+    notify  => Service["drbd"],
   }
 
 }

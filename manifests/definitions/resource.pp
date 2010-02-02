@@ -57,7 +57,7 @@ define drbd::resource ($host1, $host2, $ip1, $ip2, $port='7789', $secret, $disk,
     command => "drbdadm create-md $name",
     onlyif  => "test -e $disk",
     unless  => "drbdadm dump-md $name || (drbdadm cstate $name | egrep -q '^Connected')",
-    before  => Exec["reload drbd"],
+    before  => Service["drbd"],
     require => [
       Exec["load drbd module"],
       Drbd::Config["ZZZ-resource-${name}"],
@@ -67,7 +67,7 @@ define drbd::resource ($host1, $host2, $ip1, $ip2, $port='7789', $secret, $disk,
   exec { "enable DRBD resource $name":
     command => "drbdadm up $name",
     onlyif  => "drbdadm dstate $name | egrep -q '^Diskless/|^Unconfigured'",
-    before  => Exec["reload drbd"],
+    before  => Service["drbd"],
     require => [
       Exec["intialize DRBD metadata for $name"],
       Exec["load drbd module"],
