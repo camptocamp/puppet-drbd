@@ -27,6 +27,8 @@ Parameters:
   /dev/drbd0.
 - *$protocol*: protocol identifier for this resource (A, B or C). Defaults to
   C.
+- *$manage*: whether this DRBD resource must be activated by puppet, if it
+  happens to be down. Defaults to "true".
 
 Example usage:
 
@@ -46,32 +48,36 @@ See also:
  - drbd.conf(5)
 
 */
-define drbd::resource ($host1, $host2, $ip1, $ip2, $port='7789', $secret, $disk, $device='/dev/drbd0', $protocol='C') {
+define drbd::resource ($host1, $host2, $ip1, $ip2, $port='7789', $secret, $disk, $device='/dev/drbd0', $protocol='C', $manage='true') {
 
   drbd::config { "ZZZ-resource-${name}":
     content => template("drbd/drbd.conf.erb"),
   }
 
-  # create metadata on device, except if resource seems already initalized.
-  exec { "intialize DRBD metadata for $name":
-    command => "drbdadm create-md $name",
-    onlyif  => "test -e $disk",
-    unless  => "drbdadm dump-md $name || (drbdadm cstate $name | egrep -q '^Connected')",
-    before  => Service["drbd"],
-    require => [
-      Exec["load drbd module"],
-      Drbd::Config["ZZZ-resource-${name}"],
-    ],
-  }
+  if $manage == 'true' {
 
-  exec { "enable DRBD resource $name":
-    command => "drbdadm up $name",
-    onlyif  => "drbdadm dstate $name | egrep -q '^Diskless/|^Unconfigured'",
-    before  => Service["drbd"],
-    require => [
-      Exec["intialize DRBD metadata for $name"],
-      Exec["load drbd module"],
-    ],
+    # create metadata on device, except if resource seems already initalized.
+    exec { "intialize DRBD metadata for $name":
+      command => "drbdadm create-md $name",
+      onlyif  => "test -e $disk",
+      unless  => "drbdadm dump-md $name || (drbdadm cstate $name | egrep -q '^Connected')",
+      before  => Service["drbd"],
+      require => [
+        Exec["load drbd module"],
+        Drbd::Config["ZZZ-resource-${name}"],
+      ],
+    }
+
+    exec { "enable DRBD resource $name":
+      command => "drbdadm up $name",
+      onlyif  => "drbdadm dstate $name | egrep -q '^Diskless/|^Unconfigured'",
+      before  => Service["drbd"],
+      require => [
+        Exec["intialize DRBD metadata for $name"],
+        Exec["load drbd module"],
+      ],
+    }
+
   }
 
   iptables { "allow drbd from $host1 on port $port":
