@@ -1,0 +1,79 @@
+#!/bin/awk -f
+
+#
+# Usage:
+#   check_drbd /proc/drbd
+#
+
+BEGIN {
+
+  OK = 000
+  WARN = 001
+  ERR = 010
+
+  status = OK
+  count = 0
+  msg = ""
+
+}
+
+/^[ 0-9]+: / {
+
+  # check Connection States
+  if ( $2 ~ /cs:Connected$/ ) {
+    status = or(status, OK)
+
+  } else if ( $2 ~ /cs:Verif.+/ ) {
+    msg = sprintf ( "verifying resource %s, %s", count, msg )
+    status = or(status, WARN)
+
+  } else if ( $2 ~ /cs:Sync.+/ ) {
+    msg = sprintf ( "synchronizing resource %s, %s", count, msg )
+    status = or(status, WARN)
+
+  } else {
+    msg = sprintf ( "resource %s has connection state \"%s\", %s", count, $2, msg )
+    status = or(status, ERR)
+  }
+
+  # check Roles
+  if ( $3 ~ /ro:(Primary|Secondary)\/(Primary|Secondary)$/ ) {
+    status = or(status, OK)
+
+  } else {
+    msg = sprintf ( "resource %s has role \"%s\", %s", count, $3, msg )
+    status = or(status, ERR)
+  }
+
+  # check Disk States
+  if ( $4 ~ /ds:UpToDate\/UpToDate$/ ) {
+    status = or(status, OK)
+
+  } else if ( $4 ~ /ds:.*(Consistent|Outdated).*$/ ) {
+    msg = sprintf ( "resource %s lost sync but should resync automatically, %s", count, msg )
+    status = or(status, WARN)
+
+  } else {
+    msg = sprintf ( "resource %s has disk state \"%s\", %s", count, $4, msg )
+    status = or(status, ERR)
+  }
+
+  count++
+
+}
+
+END {
+
+  if ( status == OK ) {
+    printf("OK: %s resource(s) successfully checked.\n", count)
+
+  } else {
+    # strip off ending comma and add newline.
+    printf ( "%s.\n", substr( msg, 0, length(msg) - 2 ))
+  }
+
+  if ( status >= 8) { exit 2 }
+  else if ( status >= 1) { exit 1 }
+  else { exit 0 }
+
+}
