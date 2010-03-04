@@ -85,6 +85,7 @@ include "/etc/drbd.conf.d/*.conf";
   file { "/etc/drbd.conf.d/":
     ensure  => directory,
     source  => "puppet:///drbd/drbd.conf.d/",
+    mode    => "0644",
     purge   => true,
     recurse => true,
     force   => true,
