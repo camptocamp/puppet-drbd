@@ -52,6 +52,18 @@ class drbd::base {
     Debian: {
       #TODO
     }
+
+    Ubuntu: {
+      package { "drbd8-utils": 
+        ensure => present,
+        alias => "drbd",
+      }
+
+      package { "drbd8-source":
+        ensure => present,
+        alias => "drbd-module",
+      }
+    }
   }
 
   exec { "load drbd module":
