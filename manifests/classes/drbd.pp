@@ -29,6 +29,16 @@ class drbd::base {
         includepkgs => "drbd83,kmod-drbd83,kmod-drbd83-xen",
       }
 
+      # ensure file is managed in case we want to purge /etc/yum.repos.d/
+      # http://projects.puppetlabs.com/issues/3152
+      file { "/etc/yum.repos.d/centos-extra-drbd.repo":
+        ensure  => present,
+        mode    => 0644,
+        owner   => "root",
+        require => Yumrepo["centos-extra-drbd"],
+      }
+
+
       if $virtual == "xenu" {
         $kmodpkg = "kmod-drbd83-xen"
       } else {
