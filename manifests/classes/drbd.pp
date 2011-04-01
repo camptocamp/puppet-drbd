@@ -29,7 +29,7 @@ class drbd::base {
             enabled => 1,
             gpgkey => "http://packages.atrpms.net/RPM-GPG-KEY.atrpms",
             gpgcheck => 1,
-            includepkgs => "drbd,drbd-kmdl-2.6.32-71.14.1.el6.x86_64",
+            includepkgs => "drbd,drbd-kmdl-${kernelrelease}",
           }
 
           # ensure file is managed in case we want to purge /etc/yum.repos.d/
@@ -47,13 +47,13 @@ class drbd::base {
 
           package { "drbd":
             ensure  => present,
-            require => Yumrepo["atrpms-drbd"],
+            require => [ Yumrepo["atrpms-drbd"], file["/etc/yum.repos.d/atrpms-drbd.repo"] ],
           }
     
-          package { "drbd-kmdl-2.6.32-71.14.1.el6.x86_64":
+          package { "drbd-kmdl-${kernelrelease}":
             ensure  => present,
             alias   => "drbd-module",
-            require => Yumrepo["atrpms-drbd"],
+            require => [ Yumrepo["atrpms-drbd"], file["/etc/yum.repos.d/atrpms-drbd.repo"] ],
           }
 
           # Should probably be created by the drbd package, but is not.
