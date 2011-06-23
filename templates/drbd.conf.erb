@@ -10,6 +10,10 @@ resource <%= name %> {
     shared-secret "<%= secret %>";
   }
 
+  syncer {
+    verify-alg crc32c;
+  }
+
   on <%= host1 %> {
     address <%= ip1 %>:<%= port %>;
   }
