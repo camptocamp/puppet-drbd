@@ -111,7 +111,16 @@ class drbd::base {
     }
 
     Debian: {
-      #TODO
+      case $lsbmajdistrelease {
+        "6": {
+
+          package { "drbd8-utils":
+            ensure  => present,
+            alias   => "drbd",
+          }
+
+        }
+      }
     }
 
     Ubuntu: {
@@ -127,18 +136,43 @@ class drbd::base {
     }
   }
 
-  exec { "load drbd module":
-    command => "modprobe drbd",
-    creates => "/proc/drbd",
-    require => Package["drbd-module"],
-  }
+  # Build kernel module, if needed
+  case $operatingsystem {
 
-  service { "drbd":
-    ensure    => running,
-    hasstatus => true,
-    restart   => "/etc/init.d/drbd reload",
-    enable    => true,
-    require   => [Package["drbd", "drbd-module"], Exec["load drbd module"]],
+    Debian: {
+
+      # this module is included in linux-image-* (kernel) package
+      exec { "load drbd module":
+        command => "modprobe drbd",
+        creates => "/proc/drbd",
+      }
+
+      service { "drbd":
+        ensure    => running,
+        hasstatus => true,
+        restart   => "/etc/init.d/drbd reload",
+        enable    => true,
+        require   => [Package["drbd"], Exec["load drbd module"]],
+      }
+    }
+
+    default: {
+
+      exec { "load drbd module":
+        command => "modprobe drbd",
+        creates => "/proc/drbd",
+        require => Package["drbd-module"],
+      }
+
+      service { "drbd":
+        ensure    => running,
+        hasstatus => true,
+        restart   => "/etc/init.d/drbd reload",
+        enable    => true,
+        require   => [Package["drbd", "drbd-module"], Exec["load drbd module"]],
+      }
+    }
+
   }
 
   # this file just includes other files
