@@ -60,7 +60,7 @@ define drbd::resource ($host1, $host2, $ip1, $ip2, $port='7789', $secret, $disk,
     exec { "intialize DRBD metadata for $name":
       command => "drbdadm create-md $name",
       onlyif  => "test -e $disk",
-      unless  => "drbdadm dump-md $name || (drbdadm cstate $name | egrep -q '^Connected')",
+      unless  => "drbdadm dump-md $name || (drbdadm cstate $name | egrep -q '^(Sync|Connected)')",
       before  => Service["drbd"],
       require => [
         Exec["load drbd module"],
