@@ -47,9 +47,9 @@ class drbd::base {
 
           package { "drbd":
             ensure  => present,
-            require => [ Yumrepo["atrpms-drbd"], file["/etc/yum.repos.d/atrpms-drbd.repo"] ],
+            require => [ Yumrepo["atrpms-drbd"], File["/etc/yum.repos.d/atrpms-drbd.repo"] ],
           }
-    
+
           package { "drbd-kmdl-${kernelrelease}":
             ensure  => present,
             alias   => "drbd-module",
@@ -97,7 +97,7 @@ class drbd::base {
             alias   => "drbd",
             require => Yumrepo["centos-extra-drbd"],
           }
-    
+
           package { $kmodpkg:
             ensure  => present,
             alias   => "drbd-module",
@@ -124,7 +124,7 @@ class drbd::base {
     }
 
     Ubuntu: {
-      package { "drbd8-utils": 
+      package { "drbd8-utils":
         ensure => present,
         alias => "drbd",
       }
