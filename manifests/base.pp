@@ -53,7 +53,7 @@ class drbd::base {
           package { "drbd-kmdl-${kernelrelease}":
             ensure  => present,
             alias   => "drbd-module",
-            require => [ Yumrepo["atrpms-drbd"], file["/etc/yum.repos.d/atrpms-drbd.repo"] ],
+            require => [ Yumrepo["atrpms-drbd"], File["/etc/yum.repos.d/atrpms-drbd.repo"] ],
           }
 
           # Should probably be created by the drbd package, but is not.
