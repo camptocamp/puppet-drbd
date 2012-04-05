@@ -9,6 +9,10 @@ Usage:
 
   include drbd::base
 
+Require:
+
+  module kmod (git@github.com:camptocamp/puppet-kmod.git)
+
 */
 class drbd::base {
 
@@ -142,25 +146,20 @@ class drbd::base {
     Debian: {
 
       # this module is included in linux-image-* (kernel) package
-      exec { "load drbd module":
-        command => "modprobe drbd",
-        creates => "/proc/drbd",
-      }
+      kmod::install {'drbd': }
 
       service { "drbd":
         ensure    => running,
         hasstatus => true,
         restart   => "/etc/init.d/drbd reload",
         enable    => true,
-        require   => [Package["drbd"], Exec["load drbd module"]],
+        require   => [Package["drbd"], Kmod::Install['drbd']],
       }
     }
 
     default: {
 
-      exec { "load drbd module":
-        command => "modprobe drbd",
-        creates => "/proc/drbd",
+      kmod::install {'drbd':
         require => Package["drbd-module"],
       }
 
@@ -169,7 +168,7 @@ class drbd::base {
         hasstatus => true,
         restart   => "/etc/init.d/drbd reload",
         enable    => true,
-        require   => [Package["drbd", "drbd-module"], Exec["load drbd module"]],
+        require   => [Package["drbd"], Kmod::Install['drbd']],
       }
     }
 
