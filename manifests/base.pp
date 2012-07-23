@@ -74,7 +74,7 @@ class drbd::base {
 
           yumrepo { "centos-extra-drbd":
             descr => "DRBD packages from Centos-extras for RHEL ${lsbmajdistrelease}",
-            baseurl => "${centos_mirror}${operatingsystemrelease}/extras/${architecture}/",
+            baseurl => "${centos_mirror}${lsbmajdistrelease}/extras/${architecture}/",
             enabled => 1,
             gpgkey => "${centos_mirror}/RPM-GPG-KEY-CentOS-${lsbmajdistrelease}",
             gpgcheck => 1,
