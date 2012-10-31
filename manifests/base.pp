@@ -58,6 +58,7 @@ class drbd::base {
             ensure  => present,
             alias   => "drbd-module",
             require => [ Yumrepo["atrpms-drbd"], File["/etc/yum.repos.d/atrpms-drbd.repo"] ],
+            before  => Kmod::Install['drbd'],
           }
 
           # Should probably be created by the drbd package, but is not.
@@ -106,6 +107,7 @@ class drbd::base {
             ensure  => present,
             alias   => "drbd-module",
             require => Yumrepo["centos-extra-drbd"],
+            before  => Kmod::Install['drbd'],
           }
 
         }
@@ -135,43 +137,20 @@ class drbd::base {
 
       package { "drbd8-source":
         ensure => present,
-        alias => "drbd-module",
+        alias  => "drbd-module",
+        before => Kmod::Install['drbd'],
       }
     }
   }
 
-  # Build kernel module, if needed
-  case $operatingsystem {
+  kmod::install {'drbd': }
 
-    Debian: {
-
-      # this module is included in linux-image-* (kernel) package
-      kmod::install {'drbd': }
-
-      service { "drbd":
-        ensure    => running,
-        hasstatus => true,
-        restart   => "/etc/init.d/drbd reload",
-        enable    => true,
-        require   => [Package["drbd"], Kmod::Install['drbd']],
-      }
-    }
-
-    default: {
-
-      kmod::install {'drbd':
-        require => Package["drbd-module"],
-      }
-
-      service { "drbd":
-        ensure    => running,
-        hasstatus => true,
-        restart   => "/etc/init.d/drbd reload",
-        enable    => true,
-        require   => [Package["drbd"], Kmod::Install['drbd']],
-      }
-    }
-
+  service { "drbd":
+    ensure    => running,
+    hasstatus => true,
+    restart   => "/etc/init.d/drbd reload",
+    enable    => true,
+    require   => [Package["drbd"], Kmod::Install['drbd']],
   }
 
   # this file just includes other files
