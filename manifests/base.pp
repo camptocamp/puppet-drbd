@@ -58,7 +58,7 @@ class drbd::base {
             ensure  => present,
             alias   => "drbd-module",
             require => [ Yumrepo["atrpms-drbd"], File["/etc/yum.repos.d/atrpms-drbd.repo"] ],
-            before  => Kmod::Install['drbd'],
+            before  => Kmod::Load['drbd'],
           }
 
           # Should probably be created by the drbd package, but is not.
@@ -107,7 +107,7 @@ class drbd::base {
             ensure  => present,
             alias   => "drbd-module",
             require => Yumrepo["centos-extra-drbd"],
-            before  => Kmod::Install['drbd'],
+            before  => Kmod::Load['drbd'],
           }
 
         }
@@ -138,19 +138,27 @@ class drbd::base {
       package { "drbd8-source":
         ensure => present,
         alias  => "drbd-module",
-        before => Kmod::Install['drbd'],
+        before => Kmod::Load['drbd'],
       }
     }
   }
 
-  kmod::install {'drbd': }
+  kmod::load {'drbd': }
+
+  augeas { 'remove legacy modprobe.conf install entry':
+    incl    => '/etc/modprobe.d/modprobe.conf',
+    lens    => 'Modprobe.lns',
+    changes => "rm install[. = 'drbd']",
+    onlyif  => "match install[. = 'drbd'] size > 0",
+    before  => Kmod::Load['drbd'],
+  }
 
   service { "drbd":
     ensure    => running,
     hasstatus => true,
     restart   => "/etc/init.d/drbd reload",
     enable    => true,
-    require   => [Package["drbd"], Kmod::Install['drbd']],
+    require   => [Package["drbd"], Kmod::Load['drbd']],
   }
 
   # this file just includes other files
