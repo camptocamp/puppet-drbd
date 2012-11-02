@@ -58,6 +58,7 @@ class drbd::base {
             ensure  => present,
             alias   => "drbd-module",
             require => [ Yumrepo["atrpms-drbd"], File["/etc/yum.repos.d/atrpms-drbd.repo"] ],
+            before  => Kmod::Load['drbd'],
           }
 
           # Should probably be created by the drbd package, but is not.
@@ -106,6 +107,7 @@ class drbd::base {
             ensure  => present,
             alias   => "drbd-module",
             require => Yumrepo["centos-extra-drbd"],
+            before  => Kmod::Load['drbd'],
           }
 
         }
@@ -135,43 +137,28 @@ class drbd::base {
 
       package { "drbd8-source":
         ensure => present,
-        alias => "drbd-module",
+        alias  => "drbd-module",
+        before => Kmod::Load['drbd'],
       }
     }
   }
 
-  # Build kernel module, if needed
-  case $operatingsystem {
+  kmod::load {'drbd': }
 
-    Debian: {
+  augeas { 'remove legacy modprobe.conf install entry':
+    incl    => '/etc/modprobe.d/modprobe.conf',
+    lens    => 'Modprobe.lns',
+    changes => "rm install[. = 'drbd']",
+    onlyif  => "match install[. = 'drbd'] size > 0",
+    before  => Kmod::Load['drbd'],
+  }
 
-      # this module is included in linux-image-* (kernel) package
-      kmod::install {'drbd': }
-
-      service { "drbd":
-        ensure    => running,
-        hasstatus => true,
-        restart   => "/etc/init.d/drbd reload",
-        enable    => true,
-        require   => [Package["drbd"], Kmod::Install['drbd']],
-      }
-    }
-
-    default: {
-
-      kmod::install {'drbd':
-        require => Package["drbd-module"],
-      }
-
-      service { "drbd":
-        ensure    => running,
-        hasstatus => true,
-        restart   => "/etc/init.d/drbd reload",
-        enable    => true,
-        require   => [Package["drbd"], Kmod::Install['drbd']],
-      }
-    }
-
+  service { "drbd":
+    ensure    => running,
+    hasstatus => true,
+    restart   => "/etc/init.d/drbd reload",
+    enable    => true,
+    require   => [Package["drbd"], Kmod::Load['drbd']],
   }
 
   # this file just includes other files
