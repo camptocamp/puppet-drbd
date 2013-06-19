@@ -33,7 +33,7 @@ class drbd::base {
             enabled => 1,
             gpgkey => "http://packages.atrpms.net/RPM-GPG-KEY.atrpms",
             gpgcheck => 1,
-            includepkgs => "drbd,drbd-kmdl-${kernelrelease}",
+            includepkgs => "drbd,drbd-kmdl-*",
           }
 
           # ensure file is managed in case we want to purge /etc/yum.repos.d/
