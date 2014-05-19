@@ -14,7 +14,9 @@ Require:
   module kmod (git@github.com:camptocamp/puppet-kmod.git)
 
 */
-class drbd::base {
+class drbd::base(
+  $centos_mirror = 'http://mirror.switch.ch/ftp/mirror/centos/',
+) {
 
   case $operatingsystem {
 
@@ -68,10 +70,6 @@ class drbd::base {
 
         }
         default: {
-
-          if ( ! $centos_mirror ) {
-            $centos_mirror = "http://mirror.switch.ch/ftp/mirror/centos/"
-          }
 
           yumrepo { "centos-extra-drbd":
             descr => "DRBD packages from Centos-extras for RHEL ${lsbmajdistrelease}",
