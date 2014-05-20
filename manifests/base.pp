@@ -31,7 +31,7 @@ class drbd::base(
 
           yumrepo { "atrpms-drbd":
             descr => "DRBD packages from ATrpms for RHEL ${lsbmajdistrelease}",
-	    baseurl => "http://dl.atrpms.net/el6-${architecture}/atrpms/stable",
+            baseurl => "http://dl.atrpms.net/el6-${architecture}/atrpms/stable",
             enabled => 1,
             gpgkey => "http://packages.atrpms.net/RPM-GPG-KEY.atrpms",
             gpgcheck => 1,
