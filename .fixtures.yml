@@ -1,0 +1,5 @@
+fixtures:
+  repositories:
+    kmod: https://github.com/camptocamp/puppet-kmod.git
+  symlinks:
+    drbd: "#{source_dir}"
