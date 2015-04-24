@@ -55,14 +55,14 @@ define drbd::resource(
   $port     = '7789',
   $device   = '/dev/drbd0',
   $protocol = 'C',
-  $manage   = 'true',
+  $manage   = true,
 ) {
 
   drbd::config { "ZZZ-resource-${name}":
     content => template('drbd/drbd.conf.erb'),
   }
 
-  if $manage == 'true' {
+  if str2bool($manage) {
 
     # create metadata on device, except if resource seems already initalized.
     exec { "intialize DRBD metadata for ${name}":

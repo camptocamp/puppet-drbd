@@ -17,7 +17,7 @@ class drbd::base(
 
   case $::operatingsystem {
 
-    RedHat: {
+    'RedHat': {
 
       case $::lsbmajdistrelease {
         '6': {
@@ -38,7 +38,7 @@ class drbd::base(
           # ensure file is managed in case we want to purge /etc/yum.repos.d/
           # http://projects.puppetlabs.com/issues/3152
           file { '/etc/yum.repos.d/atrpms-drbd.repo':
-            ensure  => present,
+            ensure  => file,
             mode    => '0644',
             owner   => 'root',
             require => Yumrepo['atrpms-drbd'],
@@ -86,7 +86,7 @@ class drbd::base(
           # ensure file is managed in case we want to purge /etc/yum.repos.d/
           # http://projects.puppetlabs.com/issues/3152
           file { '/etc/yum.repos.d/centos-extra-drbd.repo':
-            ensure  => present,
+            ensure  => file,
             mode    => '0644',
             owner   => 'root',
             require => Yumrepo['centos-extra-drbd'],
@@ -117,20 +117,16 @@ class drbd::base(
 
     }
 
-    Debian: {
-      case $::lsbmajdistrelease {
-        '6': {
-
-          package { 'drbd8-utils':
-            ensure  => present,
-            alias   => 'drbd',
-          }
-
+    'Debian': {
+      if $::lsbmajdistrelease == '6' {
+        package { 'drbd8-utils':
+          ensure => present,
+          alias  => 'drbd',
         }
       }
     }
 
-    Ubuntu: {
+    'Ubuntu': {
       package { 'drbd8-utils':
         ensure => present,
         alias  => 'drbd',
@@ -164,7 +160,7 @@ class drbd::base(
 
   # this file just includes other files
   file { '/etc/drbd.conf':
-    ensure  => present,
+    ensure  => file,
     mode    => '0644',
     owner   => 'root',
     content => '# file managed by puppet
@@ -178,7 +174,9 @@ include "/etc/drbd.conf.d/*.conf";
   # only allow files managed by puppet in this directory.
   file { '/etc/drbd.conf.d/':
     ensure  => directory,
+    # lint:ignore:fileserver
     source  => 'puppet:///modules/drbd/drbd.conf.d/',
+    # lint:endignore
     mode    => '0644',
     purge   => true,
     recurse => true,
