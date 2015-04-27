@@ -1,6 +1,6 @@
 {
   "name": "camptocamp-drbd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Camptocamp",
   "summary": "Puppet DRBD module",
   "license": "Apache-2.0",
@@ -8,6 +8,7 @@
   "project_page": "https://github.com/camptocamp/puppet-drbd",
   "issues_url": "https://github.com/camptocamp/puppet-drbd/issues",
   "dependencies": [
+
   ],
   "operatingsystem_support": [
     {
