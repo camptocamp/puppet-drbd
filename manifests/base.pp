@@ -177,6 +177,8 @@ include "/etc/drbd.conf.d/*.conf";
     # lint:ignore:fileserver
     source  => 'puppet:///modules/drbd/drbd.conf.d/',
     # lint:endignore
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
     purge   => true,
     recurse => true,
