@@ -56,9 +56,9 @@ class drbd::base(
             ],
           }
 
-          package { "drbd-kmdl-${::kernelrelease}":
+          package { 'drbd-module':
             ensure  => present,
-            alias   => 'drbd-module',
+            name    => "drbd-kmdl-${::kernelrelease}",
             require => [
               Yumrepo['atrpms-drbd'],
               File['/etc/yum.repos.d/atrpms-drbd.repo'],
@@ -98,15 +98,15 @@ class drbd::base(
             $kmodpkg = 'kmod-drbd83'
           }
 
-          package { 'drbd83':
+          package { 'drbd':
             ensure  => present,
-            alias   => 'drbd',
+            name    => 'drbd83',
             require => Yumrepo['centos-extra-drbd'],
           }
 
-          package { $kmodpkg:
+          package { 'drbd-module':
             ensure  => present,
-            alias   => 'drbd-module',
+            name    => $kmodpkg,
             require => Yumrepo['centos-extra-drbd'],
             before  => Kmod::Load['drbd'],
           }
@@ -119,22 +119,22 @@ class drbd::base(
 
     'Debian': {
       if $::lsbmajdistrelease == '6' {
-        package { 'drbd8-utils':
+        package { 'drbd':
           ensure => present,
-          alias  => 'drbd',
+          name   => 'drbd8-utils',
         }
       }
     }
 
     'Ubuntu': {
-      package { 'drbd8-utils':
+      package { 'drbd':
         ensure => present,
-        alias  => 'drbd',
+        name   => 'drbd8-utils',
       }
 
-      package { 'drbd8-source':
+      package { 'drbd-module':
         ensure => present,
-        alias  => 'drbd-module',
+        name   => 'drbd8-source',
         before => Kmod::Load['drbd'],
       }
     }
