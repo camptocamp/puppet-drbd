@@ -13,6 +13,7 @@
 #
 class drbd::base(
   $centos_mirror = 'http://mirror.switch.ch/ftp/mirror/centos/',
+  $atrpms_mirror = 'http://ftp-stud.fht-esslingen.de/Mirrors/atrpms/dl.atrpms.net/',
 ) {
 
   case $::operatingsystem {
@@ -21,17 +22,15 @@ class drbd::base(
 
       case $::lsbmajdistrelease {
         '6': {
-          # Note: as CentOS 6 has not yet been released, we can't fetch drbd
-          # packages for RHEL 6 from there. This recipe fetches them from
-          # ATrpms. Maybe we can remove this differenciation once CentOS 6 is
-          # released.
+          # ATrpms repository doesn't exist anymore, so we're pulling from a
+          # mirror which is obviously not updated anymore. Don't have any
+          # better alternative right now.
 
           yumrepo { 'atrpms-drbd':
-            descr       => "DRBD packages from ATrpms for RHEL ${::lsbmajdistrelease}",
-            baseurl     => "http://dl.atrpms.net/el6-${::architecture}/atrpms/stable",
+            descr       => "DRBD packages from an ATrpms mirror for RHEL ${::lsbmajdistrelease}",
+            baseurl     => "${atrpms_mirror}el6-${::architecture}/atrpms/stable",
             enabled     => 1,
-            gpgkey      => 'http://packages.atrpms.net/RPM-GPG-KEY.atrpms',
-            gpgcheck    => 1,
+            gpgcheck    => 0,
             includepkgs => 'drbd,drbd-kmdl-*',
           }
 
