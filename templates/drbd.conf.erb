@@ -1,24 +1,24 @@
-resource <%= name %> {
+resource <%= @name %> {
 
-  protocol  <%= protocol %>;
-  device    <%= device %>;
-  disk      <%= disk %>;
+  protocol  <%= @protocol %>;
+  device    <%= @device %>;
+  disk      <%= @disk %>;
   meta-disk internal;
 
   net {
     cram-hmac-alg sha1;
-    shared-secret "<%= secret %>";
+    shared-secret "<%= @secret %>";
   }
 
   syncer {
     verify-alg crc32c;
   }
 
-  on <%= host1 %> {
-    address <%= ip1 %>:<%= port %>;
+  on <%= @host1 %> {
+    address <%= @ip1 %>:<%= @port %>;
   }
 
-  on <%= host2 %> {
-    address <%= ip2 %>:<%= port %>;
+  on <%= @host2 %> {
+    address <%= @ip2 %>:<%= @port %>;
   }
 }
