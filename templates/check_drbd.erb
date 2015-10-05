@@ -1,6 +1,6 @@
-<% if lsbdistid =~ /Debian|Ubuntu/ -%>
+<% if @lsbdistid =~ /Debian|Ubuntu/ -%>
 #!/usr/bin/gawk -f
-<% elsif lsbdistid =~ /RedHat|CentOS/ -%>
+<% elsif @lsbdistid =~ /RedHat|CentOS/ -%>
 #!/bin/gawk -f
 <% end -%>
 
