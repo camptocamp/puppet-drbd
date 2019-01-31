@@ -137,6 +137,10 @@ class drbd::base(
         before => Kmod::Load['drbd'],
       }
     }
+
+    default: {
+      fail "Unsupported OS ${::operatingsystem}"
+    }
   }
 
   kmod::load {'drbd': }
