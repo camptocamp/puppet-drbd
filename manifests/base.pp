@@ -23,9 +23,15 @@ class drbd::base(
       case $::operatingsystemmajrelease {
         '6': {
 
-          exec {'install elrepo gpg key':
-            command => '/bin/rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org',
+          exec {'download elrepo gpg key':
+            command => 'wget -O /etc/pki/rpm-gpg/RPM-GPG-KEY-elrepo.org https://www.elrepo.org/RPM-GPG-KEY-elrepo.org',
+            path    => '/bin:/sbin:/usr/bin:/usr/sbin',
             creates => '/etc/pki/rpm-gpg/RPM-GPG-KEY-elrepo.org',
+          } ~>
+          exec {'install elrepo gpg key':
+            command     => 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-elrepo.org',
+            path        => '/bin:/sbin:/usr/bin:/usr/sbin',
+            refreshonly => true,
           } ->
           yumrepo { 'elrepo-drbd':
             descr       => 'DRBD packages ElRepo for RHEL 6',
