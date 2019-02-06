@@ -23,5 +23,6 @@ define drbd::lvm (
   exec { "create LVM volume ${name}":
     command => "lvcreate -L ${size} -n drbd-${name} ${vg}",
     creates => "/dev/${vg}/drbd-${name}",
+    path    => '/bin:/sbin:/usr/bin:/usr/sbin',
   }
 }

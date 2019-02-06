@@ -68,22 +68,24 @@ define drbd::resource(
     # create metadata on device, except if resource seems already initalized.
     exec { "intialize DRBD metadata for ${name}":
       command => "drbdadm create-md ${name}",
+      path    => '/bin:/sbin:/usr/bin:/usr/sbin',
       onlyif  => "test -e ${disk}",
       unless  => "drbdadm dump-md ${name} || (drbdadm cstate ${name} | egrep -q '^(Sync|Connected)')",
       before  => Service['drbd'],
       require => [
-        Exec['load drbd module'],
+        Exec['modprobe drbd'],
         Drbd::Config["ZZZ-resource-${name}"],
       ],
     }
 
     exec { "enable DRBD resource ${name}":
       command => "drbdadm up ${name}",
+      path    => '/bin:/sbin:/usr/bin:/usr/sbin',
       onlyif  => "drbdadm dstate ${name} | egrep -q '^Diskless/|^Unconfigured'",
       before  => Service['drbd'],
       require => [
         Exec["intialize DRBD metadata for ${name}"],
-        Exec['load drbd module'],
+        Exec['modprobe drbd'],
       ],
     }
 
