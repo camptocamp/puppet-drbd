@@ -88,14 +88,14 @@ define drbd::resource(
 
   }
 
-  fw { "100 allow drbd from ${host1} on port ${port}":
+  iptables { "allow drbd from ${host1} on port ${port}":
     proto  => 'tcp',
     dport  => $port,
     source => $ip1,
     jump   => 'ACCEPT',
   }
 
-  fw { "100 allow drbd from ${host2} on port ${port}":
+  iptables { "allow drbd from ${host2} on port ${port}":
     proto  => 'tcp',
     dport  => $port,
     source => $ip2,
