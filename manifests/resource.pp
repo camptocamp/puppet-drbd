@@ -52,10 +52,11 @@ define drbd::resource(
   $ip2,
   $secret,
   $disk,
-  $port     = '7789',
-  $device   = '/dev/drbd0',
-  $protocol = 'C',
-  $manage   = true,
+  $port      = '7789',
+  $device    = '/dev/drbd0',
+  $protocol  = 'C',
+  $manage    = true,
+  $manage_fw = true,
 ) {
 
   drbd::config { "ZZZ-resource-${name}":
@@ -88,18 +89,20 @@ define drbd::resource(
 
   }
 
-  iptables { "allow drbd from ${host1} on port ${port}":
-    proto  => 'tcp',
-    dport  => $port,
-    source => $ip1,
-    jump   => 'ACCEPT',
-  }
+  if $manage_fw {
+    iptables { "allow drbd from ${host1} on port ${port}":
+      proto  => 'tcp',
+      dport  => $port,
+      source => $ip1,
+      jump   => 'ACCEPT',
+    }
 
-  iptables { "allow drbd from ${host2} on port ${port}":
-    proto  => 'tcp',
-    dport  => $port,
-    source => $ip2,
-    jump   => 'ACCEPT',
+    iptables { "allow drbd from ${host2} on port ${port}":
+      proto  => 'tcp',
+      dport  => $port,
+      source => $ip2,
+      jump   => 'ACCEPT',
+    }
   }
 
 }
