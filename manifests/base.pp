@@ -13,34 +13,26 @@
 #
 class drbd::base(
   $centos_mirror = 'http://mirror.switch.ch/ftp/mirror/centos/',
-  $atrpms_mirror = 'http://ftp-stud.fht-esslingen.de/Mirrors/atrpms/dl.atrpms.net/',
+  $elrepo_mirror = 'http://elrepo.org/linux/elrepo/'
 ) {
 
   case $::operatingsystem {
 
     'RedHat': {
 
-      case $::lsbmajdistrelease {
+      case $::operatingsystemmajrelease {
         '6': {
-          # ATrpms repository doesn't exist anymore, so we're pulling from a
-          # mirror which is obviously not updated anymore. Don't have any
-          # better alternative right now.
 
-          yumrepo { 'atrpms-drbd':
-            descr       => "DRBD packages from an ATrpms mirror for RHEL ${::lsbmajdistrelease}",
-            baseurl     => "${atrpms_mirror}el6-${::architecture}/atrpms/stable",
+          exec {'install elrepo gpg key':
+            command => '/bin/rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org',
+            creates => '/etc/pki/rpm-gpg/RPM-GPG-KEY-elrepo.org',
+          } ->
+          yumrepo { 'elrepo-drbd':
+            descr       => 'DRBD packages ElRepo for RHEL 6',
+            baseurl     => "${elrepo_mirror}el6/\$basearch/",
             enabled     => 1,
-            gpgcheck    => 0,
-            includepkgs => 'drbd,drbd-kmdl-*',
-          }
-
-          # ensure file is managed in case we want to purge /etc/yum.repos.d/
-          # http://projects.puppetlabs.com/issues/3152
-          file { '/etc/yum.repos.d/atrpms-drbd.repo':
-            ensure  => file,
-            mode    => '0644',
-            owner   => 'root',
-            require => Yumrepo['atrpms-drbd'],
+            gpgcheck    => 1,
+            includepkgs => 'drbd*,kmod-drbd*',
           }
 
           if $::virtual == 'xenu' {
@@ -49,35 +41,25 @@ class drbd::base(
 
           package { 'drbd':
             ensure  => present,
-            require => [
-              Yumrepo['atrpms-drbd'],
-              File['/etc/yum.repos.d/atrpms-drbd.repo'],
-            ],
+            name    => 'drbd84-utils',
+            require => Yumrepo['elrepo-drbd'],
           }
 
           package { 'drbd-module':
             ensure  => present,
-            name    => "drbd-kmdl-${::kernelrelease}",
-            require => [
-              Yumrepo['atrpms-drbd'],
-              File['/etc/yum.repos.d/atrpms-drbd.repo'],
-            ],
+            name    => 'kmod-drbd84',
+            require => Yumrepo['elrepo-drbd'],
             before  => Kmod::Load['drbd'],
-          }
-
-          # Should probably be created by the drbd package, but is not.
-          file { '/var/lib/drbd':
-            ensure => directory,
           }
 
         }
         default: {
 
           yumrepo { 'centos-extra-drbd':
-            descr       => "DRBD packages from Centos-extras for RHEL ${::lsbmajdistrelease}",
-            baseurl     => "${centos_mirror}${::lsbmajdistrelease}/extras/${::architecture}/",
+            descr       => "DRBD packages from Centos-extras for RHEL ${::operatingsystemmajrelease}",
+            baseurl     => "${centos_mirror}${::operatingsystemmajrelease}/extras/\$basearch/",
             enabled     => 1,
-            gpgkey      => "${centos_mirror}/RPM-GPG-KEY-CentOS-${::lsbmajdistrelease}",
+            gpgkey      => "${centos_mirror}/RPM-GPG-KEY-CentOS-${::operatingsystemmajrelease}",
             gpgcheck    => 1,
             includepkgs => 'drbd83,kmod-drbd83,kmod-drbd83-xen',
           }
@@ -117,7 +99,7 @@ class drbd::base(
     }
 
     'Debian': {
-      if $::lsbmajdistrelease == '6' {
+      if $::operatingsystemmajrelease == '6' {
         package { 'drbd':
           ensure => present,
           name   => 'drbd8-utils',
